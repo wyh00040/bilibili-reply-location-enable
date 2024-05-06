@@ -28,27 +28,6 @@
                                 setTimeout(()=>{
                                     let res = result;
                                     let reply_items = document.getElementsByClassName("reply-item");
-                                    if(res.data.top_replies.length){
-                                        let root_reply_id = reply_items[0].children[1].children[0].getAttribute("data-root-reply-id");
-                                        if( root_reply_id == res.data.top_replies[0].rpid_str){
-                                            let top_reply_location = document.createElement("span");
-                                            top_reply_location.style = "margin:0 20px 0 0";
-                                            top_reply_location.className = "sub-reply-location";
-                                            top_reply_location.innerHTML = res.data.top_replies[0].reply_control.location;
-                                            reply_items[0].children[1].getElementsByClassName("reply-time")[0].after(top_reply_location);
-                                            let top_i = 0;
-                                            for(let x in reply_items[0].children[2].getElementsByClassName("sub-reply-item")){
-                                                let top_sub_reply_location = document.createElement("span");
-                                                top_sub_reply_location.style = "margin:0 20px 0 0";
-                                                top_sub_reply_location.className = "sub-reply-location";
-                                                top_sub_reply_location.innerHTML = res.data.top_replies[0].replies[top_i].reply_control.location;
-                                                console.log(top_i)
-                                                reply_items[0].children[2].getElementsByClassName("sub-reply-time")[top_i].after(top_sub_reply_location);
-                                                top_i++
-                                            }
-                                        }
-                                        root_total = 1;
-                                    }
                                     if(res.data.replies.length){
                                         let replies = res.data.replies;
                                         let i = 0;
@@ -111,7 +90,7 @@
                                                     }
                                                     j++;
                                                 }
-                                            break;
+                                                break;
                                             }
                                             i++;
                                         }
