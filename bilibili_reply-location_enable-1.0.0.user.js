@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.0.0
 // @description  哔哩哔哩网页端视频评论显示ip属地
-// @author       二等走兽
+// @author       wyh00040
 // @match        https://www.bilibili.com/video/*
 // @icon         https://www.bilibili.com/favicon.ico?v=1
 // @grant        none
