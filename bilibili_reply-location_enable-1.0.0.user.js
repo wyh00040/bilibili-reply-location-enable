@@ -37,7 +37,11 @@
                                                 let reply_location = document.createElement("span");
                                                 reply_location.style = "margin:0 20px 0 0";
                                                 reply_location.className = "root-reply-location";
-                                                reply_location.innerHTML = replies[i].reply_control.location;
+                                                if(replies[i].reply_control.location){
+                                                    reply_location.innerHTML = replies[i].reply_control.location;
+                                                }else{
+                                                    reply_location.innerHTML = "IP属地：未知";
+                                                }
                                                 reply_items[i+root_total].children[1].getElementsByClassName("reply-time")[0].after(reply_location);
                                                 let sub_replies = res.data.replies[i].replies;
                                                 let j = 0;
@@ -45,7 +49,11 @@
                                                     let sub_reply_location = document.createElement("span");
                                                     sub_reply_location.style = "margin:0 20px 0 0";
                                                     sub_reply_location.className = "sub-reply-location";
-                                                    sub_reply_location.innerHTML = sub_replies[j].reply_control.location;
+                                                    if(sub_replies[j].reply_control.location){
+                                                        sub_reply_location.innerHTML = sub_replies[j].reply_control.location;
+                                                    }else{
+                                                        sub_reply_location.innerHTML = "IP属地：未知";
+                                                    }
                                                     reply_items[i+root_total].children[2].getElementsByClassName("sub-reply-time")[j].after(sub_reply_location);
                                                     j++;
                                                 }
@@ -85,7 +93,11 @@
                                                         let sub_reply_location = document.createElement("span");
                                                         sub_reply_location.style = "margin:0 20px 0 0";
                                                         sub_reply_location.className = "sub-reply-location";
-                                                        sub_reply_location.innerHTML = sub_replies[j].reply_control.location;
+                                                        if(sub_replies[j].reply_control.location){
+                                                            sub_reply_location.innerHTML = sub_replies[j].reply_control.location;
+                                                        }else{
+                                                            sub_reply_location.innerHTML = "IP属地：未知";
+                                                        }
                                                         reply_items[i].children[2].getElementsByClassName("sub-reply-time")[j].after(sub_reply_location);
                                                     }
                                                     j++;
