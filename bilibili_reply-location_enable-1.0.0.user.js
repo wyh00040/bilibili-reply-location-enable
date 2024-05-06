@@ -4,7 +4,13 @@
 // @version      1.0.0
 // @description  哔哩哔哩网页端视频评论显示ip属地
 // @author       wyh00040
-// @match        https://www.bilibili.com/video/*
+// @match         *://www.bilibili.com/video/av*
+// @match         *://www.bilibili.com/video/BV*
+// @match         *://www.bilibili.com/list/*
+// @match         *://www.bilibili.com/bangumi/play/ep*
+// @match         *://www.bilibili.com/bangumi/play/ss*
+// @match         *://www.bilibili.com/cheese/play/ep*
+// @match         *://www.bilibili.com/cheese/play/ss*
 // @icon         https://www.bilibili.com/favicon.ico?v=1
 // @grant        none
 // ==/UserScript==
