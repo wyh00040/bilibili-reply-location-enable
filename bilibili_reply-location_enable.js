@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         bilibili reply-location enable
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.0.2
 // @description  哔哩哔哩网页端视频评论显示ip属地
 // @author       wyh00040
 // @match         *://www.bilibili.com/video/av*
@@ -40,7 +40,7 @@
                                     let feeds = bili_comments.shadowRoot.getElementById("feed").children;
                                     let replies = result.data.replies;
                                     if (replies.length) {
-                                        if(result.data.cursor.is_begin) root_total = 0;
+                                        //if(result.data.cursor.is_begin) root_total = 0;
                                         let i = 0;
                                         for (let x in replies) {
                                             feeds[i + root_total].setAttribute("rpid", replies[i].rpid);
