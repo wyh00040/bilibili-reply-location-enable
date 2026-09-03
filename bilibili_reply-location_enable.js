@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         bilibili reply-location enable
 // @namespace    http://tampermonkey.net/
-// @version      1.0.2
+// @version      1.0.3
 // @description  哔哩哔哩网页端视频评论显示ip属地
 // @author       wyh00040
 // @match         *://www.bilibili.com/video/av*
@@ -20,6 +20,7 @@
     let regex_main_url = new RegExp("//api.bilibili.com/x/v2/reply/wbi/main?");
     let regex_reply_url = new RegExp("//api.bilibili.com/x/v2/reply/reply?");
     let root_total = 0;
+    let sort_actions = "hot";
     const oldEventListener = EventTarget.prototype.addEventListener;
     EventTarget.prototype.addEventListener = function (...args) {
         return oldEventListener.call(this, ...args);
@@ -37,10 +38,14 @@
                             oldJson.apply(this, arguments).then((result) => {
                                 setTimeout(() => {
                                     let bili_comments = document.getElementsByTagName("bili-comments")[0];
+                                    let sort_actions_ = bili_comments.shadowRoot.getElementById("header").children[0].shadowRoot.getElementById("sort-actions").className;
+                                    if (sort_actions !== sort_actions_) {
+                                        sort_actions = sort_actions_;
+                                        root_total = 0;
+                                    }
                                     let feeds = bili_comments.shadowRoot.getElementById("feed").children;
                                     let replies = result.data.replies;
                                     if (replies.length) {
-                                        //if(result.data.cursor.is_begin) root_total = 0;
                                         let i = 0;
                                         for (let x in replies) {
                                             feeds[i + root_total].setAttribute("rpid", replies[i].rpid);
@@ -96,7 +101,6 @@
                                         for (let x in feeds) {
                                             let expander_contents = feeds[i].shadowRoot.getElementById("replies").children[0].shadowRoot.getElementById("expander-contents");
                                             if (feeds[i].getAttribute("rpid") == result.data.root.rpid) {
-                                                if (result.data.page.count > 10) feeds[i].shadowRoot.getElementById("replies").children[0].shadowRoot.getElementById("pagination-foot").innerHTML = "";
                                                 let sub_replies = replies;
                                                 let j = 0;
                                                 for (let x in sub_replies) {
