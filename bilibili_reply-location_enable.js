@@ -2,20 +2,14 @@
 // @name         bilibili reply-location enable
 // @namespace    http://tampermonkey.net/
 // @version      1.1.0
-// @description  哔哩哔哩网页端视频评论显示ip属地（修复楼中楼不渲染）
+// @description  哔哩哔哩网页端视频评论显示ip属地
 // @author       wyh00040
-// @match         *://www.bilibili.com/video/av*
-// @match         *://www.bilibili.com/video/BV*
-// @match         *://www.bilibili.com/list/*
-// @match         *://www.bilibili.com/bangumi/play/ep*
-// @match         *://www.bilibili.com/bangumi/play/ss*
-// @match         *://www.bilibili.com/cheese/play/ep*
-// @match         *://www.bilibili.com/cheese/play/ss*
+// @match         *://*.bilibili.com/*
 // @icon         https://www.bilibili.com/favicon.ico?v=1
 // @grant        none
 // @run-at       document-start
-// @updateURL    https://github.com/wyh00040/bilibili-reply-location-enable/raw/main/bilibili_reply-location_enable.js
-// @downloadURL  https://github.com/wyh00040/bilibili-reply-location-enable/raw/main/bilibili_reply-location_enable.js
+// @updateURL    https://raw.githubusercontent.com/wyh00040/bilibili-reply-location-enable/main/bilibili_reply-location_enable.user.js
+// @downloadURL  https://raw.githubusercontent.com/wyh00040/bilibili-reply-location-enable/main/bilibili_reply-location_enable.user.js
 // ==/UserScript==
 
 (function () {
@@ -124,5 +118,3 @@
         return originalDefine(name, constructor, options);
     };
 })();
-
-
