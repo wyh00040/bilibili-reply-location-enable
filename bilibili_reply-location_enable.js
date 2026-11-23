@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         bilibili reply-location enable
 // @namespace    http://tampermonkey.net/
-// @version      1.0.3
-// @description  哔哩哔哩网页端视频评论显示ip属地
+// @version      1.1.0
+// @description  哔哩哔哩网页端视频评论显示ip属地（修复楼中楼不渲染）
 // @author       wyh00040
 // @match         *://www.bilibili.com/video/av*
 // @match         *://www.bilibili.com/video/BV*
@@ -13,125 +13,112 @@
 // @match         *://www.bilibili.com/cheese/play/ss*
 // @icon         https://www.bilibili.com/favicon.ico?v=1
 // @grant        none
+// @run-at       document-start
 // ==/UserScript==
 
 (function () {
     'use strict';
-    let regex_main_url = new RegExp("//api.bilibili.com/x/v2/reply/wbi/main?");
-    let regex_reply_url = new RegExp("//api.bilibili.com/x/v2/reply/reply?");
-    let root_total = 0;
-    let sort_actions = "hot";
-    const oldEventListener = EventTarget.prototype.addEventListener;
-    EventTarget.prototype.addEventListener = function (...args) {
-        return oldEventListener.call(this, ...args);
-    };
-    let oldFetch = fetch;
-    function hookFetch(url, init) {
-        let path = arguments[0];
-        if (regex_main_url.test(path)) {
-            console.log("get main")
-            return new Promise((resolve, reject) => {
-                oldFetch.apply(this, arguments).then((response) => {
-                    const oldJson = response.json;
-                    response.json = function () {
-                        return new Promise((resolve, reject) => {
-                            oldJson.apply(this, arguments).then((result) => {
-                                setTimeout(() => {
-                                    let bili_comments = document.getElementsByTagName("bili-comments")[0];
-                                    let sort_actions_ = bili_comments.shadowRoot.getElementById("header").children[0].shadowRoot.getElementById("sort-actions").className;
-                                    if (sort_actions !== sort_actions_) {
-                                        sort_actions = sort_actions_;
-                                        root_total = 0;
-                                    }
-                                    let feeds = bili_comments.shadowRoot.getElementById("feed").children;
-                                    let replies = result.data.replies;
-                                    if (replies.length) {
-                                        let i = 0;
-                                        for (let x in replies) {
-                                            feeds[i + root_total].setAttribute("rpid", replies[i].rpid);
-                                            let comment = feeds[i + root_total].shadowRoot.getElementById("comment");
-                                            let sub_replies;
-                                            let reply_location = document.createElement("div");
-                                            reply_location.id = "location";
-                                            reply_location.innerHTML = "IP属地：未获取";
-                                            if (replies[i].reply_control.location) {
-                                                reply_location.innerHTML = replies[i].reply_control.location;
-                                            }
-                                            comment.shadowRoot.getElementById("footer").children[0].shadowRoot.getElementById("pubdate").after(reply_location);
-                                            sub_replies = replies[i].replies;
-                                            let j = 0;
-                                            for (let x in sub_replies) {
-                                                let expander_contents = feeds[i + root_total].shadowRoot.getElementById("replies").children[0].shadowRoot.getElementById("expander-contents");
-                                                let sub_reply_location = document.createElement("div");
-                                                sub_reply_location.id = "location";
-                                                sub_reply_location.innerHTML = "IP属地：未获取";
-                                                if (sub_replies[j].reply_control.location) {
-                                                    sub_reply_location.innerHTML = sub_replies[j].reply_control.location;
-                                                }
-                                                expander_contents.children[j].shadowRoot.getElementById("footer").children[0].shadowRoot.getElementById("pubdate").after(sub_reply_location);
-                                                j++;
-                                            }
-                                            i++;
-                                        }
-                                        root_total += i;
-                                    }
-                                });
-                                resolve(result);
-                            });
-                        });
 
-                    };
-                    resolve(response);
-                });
-            });
-        } else if (regex_reply_url.test(path)) {
-            console.log("get reply")
-            return new Promise((resolve, reject) => {
-                oldFetch.apply(this, arguments).then((response) => {
-                    const oldJson = response.json;
-                    response.json = function () {
-                        return new Promise((resolve, reject) => {
-                            oldJson.apply(this, arguments).then((result) => {
-                                setTimeout(() => {
-                                    let bili_comments = document.getElementsByTagName("bili-comments")[0];
-                                    let feeds = bili_comments.shadowRoot.getElementById("feed").children;
-                                    let replies = result.data.replies;
-                                    if (replies.length) {
-                                        let i = 0;
-                                        for (let x in feeds) {
-                                            let expander_contents = feeds[i].shadowRoot.getElementById("replies").children[0].shadowRoot.getElementById("expander-contents");
-                                            if (feeds[i].getAttribute("rpid") == result.data.root.rpid) {
-                                                let sub_replies = replies;
-                                                let j = 0;
-                                                for (let x in sub_replies) {
-                                                    if (!expander_contents.children[j].shadowRoot.getElementById("footer").children[0].shadowRoot.getElementById("location")) {
-                                                        let sub_reply_location = document.createElement("div");
-                                                        sub_reply_location.id = "location";
-                                                        sub_reply_location.innerHTML = "IP属地：未获取";
-                                                        if (sub_replies[j].reply_control.location) {
-                                                            sub_reply_location.innerHTML = sub_replies[j].reply_control.location;
-                                                        }
-                                                        expander_contents.children[j].shadowRoot.getElementById("footer").children[0].shadowRoot.getElementById("pubdate").after(sub_reply_location);
-                                                    }
-                                                    j++;
-                                                }
-                                                break;
-                                            }
-                                            i++;
-                                        }
-                                    }
-                                });
-                                resolve(result);
-                            });
-                        });
+    const IP_ATTR = 'data-bili-ip-location';
+    const ipStore = new Map(); // rpid -> location，作为兜底数据源
 
-                    };
-                    resolve(response);
-                });
-            });
-        } else {
-            return oldFetch.apply(this, arguments);
+    // ============================================================
+    // 第一部分：API 拦截（兜底）
+    // ============================================================
+    const regex_main_url = /\/\/api\.bilibili\.com\/x\/v2\/reply\/wbi\/main\?/;
+    const regex_reply_url = /\/\/api\.bilibili\.com\/x\/v2\/reply\/reply\?/;
+    const oldFetch = fetch;
+
+    function extractReplies(data) {
+        if (!data?.data) return;
+        const roots = [
+            ...(data.data.top_replies || []),
+            ...(data.data.replies || []),
+        ];
+        const queue = [...roots];
+        while (queue.length) {
+            const item = queue.shift();
+            if (item?.rpid && item?.reply_control?.location) {
+                ipStore.set(String(item.rpid), item.reply_control.location);
+            }
+            if (item.replies) queue.push(...item.replies);
         }
     }
-    window.fetch = hookFetch;
+
+    window.fetch = function (...args) {
+        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+        return oldFetch.apply(this, args).then((response) => {
+            if (url && (regex_main_url.test(url) || regex_reply_url.test(url))) {
+                const clone = response.clone();
+                clone.json().then(extractReplies).catch(() => {});
+            }
+            return response;
+        });
+    };
+
+    // ============================================================
+    // 第二部分：Hook bili-comment-action-buttons-renderer
+    // 这是主评论和楼中楼共用的操作栏组件，this.data 直接带评论数据
+    // ============================================================
+    function createIpTag(location) {
+        const div = document.createElement('div');
+        div.setAttribute(IP_ATTR, '1');
+        div.textContent = location;
+        return div;
+    }
+
+    function injectIntoActionButtons(component) {
+        const data = component.data;
+        if (!data) return;
+
+        const location = data.reply_control?.location || ipStore.get(String(data.rpid));
+        if (!location) return;
+
+        const root = component.shadowRoot;
+        if (!root) return;
+
+        // 已插入且内容一致，跳过
+        const existing = root.querySelector(`[${IP_ATTR}]`);
+        if (existing) {
+            if (existing.textContent === location) return;
+            existing.remove();
+        }
+
+        const pubdate = root.getElementById('pubdate');
+        if (!pubdate) return;
+
+        const tag = createIpTag(location);
+        // 直接插在 #pubdate 后面，主评论和楼中楼都适用
+        pubdate.insertAdjacentElement('afterend', tag);
+    }
+
+    const originalDefine = customElements.define.bind(customElements);
+    customElements.define = function (name, constructor, options) {
+        if (name === 'bili-comment-action-buttons-renderer') {
+            const Original = constructor;
+
+            class Patched extends Original {
+                update(changedProperties) {
+                    super.update(changedProperties);
+                    // 微任务确保 Lit 本轮渲染完成
+                    queueMicrotask(() => {
+                        try {
+                            injectIntoActionButtons(this);
+                        } catch (e) { /* 静默失败，不影响页面 */ }
+                    });
+                }
+                connectedCallback() {
+                    super.connectedCallback?.();
+                    queueMicrotask(() => {
+                        try {
+                            injectIntoActionButtons(this);
+                        } catch (e) { /* ignore */ }
+                    });
+                }
+            }
+
+            return originalDefine(name, Patched, options);
+        }
+        return originalDefine(name, constructor, options);
+    };
 })();
