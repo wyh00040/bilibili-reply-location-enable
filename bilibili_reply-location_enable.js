@@ -15,7 +15,7 @@
 // @grant        none
 // @run-at       document-start
 // @updateURL    https://github.com/wyh00040/bilibili-reply-location-enable/raw/main/bilibili_reply-location_enable.js
-//@downloadURL   https://github.com/wyh00040/bilibili-reply-location-enable/raw/main/bilibili_reply-location_enable.js
+// @downloadURL  https://github.com/wyh00040/bilibili-reply-location-enable/raw/main/bilibili_reply-location_enable.js
 // ==/UserScript==
 
 (function () {
@@ -124,4 +124,5 @@
         return originalDefine(name, constructor, options);
     };
 })();
+
 
