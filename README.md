@@ -19,4 +19,4 @@ https://greasyfork.org/zh-CN/scripts/448434-b%E7%AB%99%E8%AF%84%E8%AE%BA%E5%8C%B
 
 ## 2026.11.23
 更新v1.1.0  
-deepseek帮我优化了代码，修复了已知问题 
+deepseek帮我优化了代码，更新了一些功能，修复了已知问题 
