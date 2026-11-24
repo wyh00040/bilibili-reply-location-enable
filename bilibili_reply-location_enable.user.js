@@ -8,7 +8,7 @@
 // @icon         https://www.bilibili.com/favicon.ico?v=1
 // @grant        none
 // @run-at       document-start
-// @updateURL    https://raw.githubusercontent.com/wyh00040/bilibili-reply-location-enable/main/bilibili_reply-location_enable.user.js
+// @updateURL    https://raw.githubusercontent.com/wyh00040/bilibili-reply-location-enable/main/bilibili_reply-location_enable.meta.js
 // @downloadURL  https://raw.githubusercontent.com/wyh00040/bilibili-reply-location-enable/main/bilibili_reply-location_enable.user.js
 // ==/UserScript==
 
